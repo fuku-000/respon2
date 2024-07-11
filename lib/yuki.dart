@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-class yukiPage extends StatelessWidget {
+class YukiPage extends StatelessWidget {
+  const YukiPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext content) {
     return Scaffold(
