@@ -9,7 +9,7 @@ class FukuPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fuku Page'),
+        title: const Text('スタンプカード'),
       ),
       body: ListView.builder(
         itemCount: names.length,
