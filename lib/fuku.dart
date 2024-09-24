@@ -8,33 +8,51 @@ class FukuPage extends StatefulWidget {
 }
 
 class _FukuPageState extends State<FukuPage> {
-  final List<String> names = ['落合福', 'Jane Smith', 'Alice Johnson', 'Bob Brown', '福澤裕生'];
-  
-  // 各リスト項目にスタンプが押されているかどうかを管理するリスト
-  final List<bool> _isStamped = [false, false, false, false, false];
+  // スタンプが押されているかどうかを管理するリスト
+  final List<bool> _isStamped = List.generate(20, (index) => false);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('スタンプカード'),
+        title: const Text('すごろくスタンプカード'),
       ),
-      body: ListView.builder(
-        itemCount: names.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(names[index]),
-            trailing: _isStamped[index] 
-              ? const Icon(Icons.check_circle, color: Colors.green)
-              : const Icon(Icons.radio_button_unchecked),
-            onTap: () {
-              setState(() {
-                // 押された項目のスタンプ状態をトグルする
-                _isStamped[index] = !_isStamped[index];
-              });
-            },
-          );
-        },
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 5, // 5列のグリッド
+            crossAxisSpacing: 10.0,
+            mainAxisSpacing: 10.0,
+          ),
+          itemCount: 20,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  // タップされたマスのスタンプ状態をトグルする
+                  _isStamped[index] = !_isStamped[index];
+                });
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _isStamped[index] ? Colors.green : Colors.grey[300],
+                  border: Border.all(color: Colors.black),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: _isStamped[index]
+                      ? const Icon(Icons.check, color: Colors.white, size: 30)
+                      : Text(
+                          '${index + 1}', // マスの番号を表示
+                          style: const TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
