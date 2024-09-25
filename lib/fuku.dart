@@ -15,7 +15,7 @@ class _FukuPageState extends State<FukuPage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ポップなスタンプカード'),
+        title: const Text('sticker sheet'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
