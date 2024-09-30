@@ -15,7 +15,7 @@ class StampDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('スタンプ詳細'),
+        title: const Text('details'),
       ),
       body: Center(
         child: Padding(
@@ -26,7 +26,7 @@ class StampDetailPage extends StatelessWidget {
               const Icon(Icons.star, color: Colors.pinkAccent, size: 100),
               const SizedBox(height: 20),
               Text(
-                'スタンプ番号: $stampIndex',
+                'number: $stampIndex',
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),

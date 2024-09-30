@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // 日付フォーマットのために必要
-import 'stamp_detail_page.dart'; // 詳細ページのインポート
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+import 'stamp_detail_page.dart';
 
 class FukuPage extends StatefulWidget {
   const FukuPage({super.key});
@@ -10,20 +11,44 @@ class FukuPage extends StatefulWidget {
 }
 
 class _FukuPageState extends State<FukuPage> {
-  // スタンプが押された日時を保存するリスト (押されてない場合は null)
   final List<DateTime?> _stampDates = List.generate(20, (index) => null);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStampData(); // 起動時に保存されたスタンプ状態をロード
+  }
+
+  // スタンプ情報を SharedPreferences からロードする
+  Future<void> _loadStampData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    for (int i = 0; i < 20; i++) {
+      String? stampDateString = prefs.getString('stamp_$i');
+      if (stampDateString != null) {
+        setState(() {
+          _stampDates[i] = DateTime.parse(stampDateString);
+        });
+      }
+    }
+  }
+
+  // スタンプ情報を SharedPreferences に保存する
+  Future<void> _saveStampData(int index, DateTime date) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('stamp_$index', date.toIso8601String());
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('スタンプカード (ポップなデザイン)'),
+        title: const Text('sticker sheet'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 5, // 5列のグリッド
+            crossAxisCount: 5,
             crossAxisSpacing: 10.0,
             mainAxisSpacing: 10.0,
           ),
@@ -33,10 +58,12 @@ class _FukuPageState extends State<FukuPage> {
               onTap: () {
                 setState(() {
                   if (_stampDates[index] == null) {
-                    // スタンプを押した時、現在の日時を保存
-                    _stampDates[index] = DateTime.now();
+                    // スタンプを押した時の処理
+                    DateTime now = DateTime.now();
+                    _stampDates[index] = now;
+                    _saveStampData(index, now); // 保存する
                   } else {
-                    // すでに押されていた場合、詳細ページへ遷移
+                    // すでにスタンプが押されている場合は詳細ページへ遷移
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -75,7 +102,6 @@ class _FukuPageState extends State<FukuPage> {
                             const Icon(Icons.star, color: Colors.white, size: 36),
                             const SizedBox(height: 5),
                             Text(
-                              // 押された日時をフォーマットして表示
                               DateFormat('MM/dd\nHH:mm').format(_stampDates[index]!),
                               textAlign: TextAlign.center,
                               style: const TextStyle(
@@ -86,7 +112,7 @@ class _FukuPageState extends State<FukuPage> {
                           ],
                         )
                       : Text(
-                          '${index + 1}', // マスの番号を表示
+                          '${index + 1}',
                           style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
