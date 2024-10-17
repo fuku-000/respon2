@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'fuku.dart';
-import 'full.dart';
+import 'full.dart';  
+import 'weather.dart';
 import 'yuki.dart';
 import 'ayataka.dart';
-
 void main() {
   runApp(const MyApp());
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -23,32 +21,25 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
   final String title;
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-
   void _incrementCounter() {
     setState(() {
       _counter++;
     });
   }
-
   void _navigateToPage(Widget page) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => page),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: const Text('Go to Fuku Page'),
             ),
             ElevatedButton(
-              onPressed: () => _navigateToPage(const FullPage()),
+              onPressed: () => _navigateToPage( FullPage()),
               child: const Text('Go to Full Page'),
             ),
             ElevatedButton(
