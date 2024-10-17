@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'fuku.dart';
-import 'full.dart';  // FullPageクラスが定義されているファイルをインポート
+import 'full.dart';  
 import 'weather.dart';
 import 'yuki.dart';
 import 'ayataka.dart';
