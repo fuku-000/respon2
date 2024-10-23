@@ -4,6 +4,8 @@ import 'full.dart';
 import 'weather.dart';
 import 'yuki.dart';
 import 'ayataka.dart';
+
+
 void main() {
   runApp(const MyApp());
 }
