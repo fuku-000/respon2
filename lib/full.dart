@@ -1,294 +1,132 @@
-
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'weather.dart'; // weather.dartから天気データを取得するメソッドをインポート
+import 'package:intl/intl.dart'; // これを追加
 
 
-
-void main() async {
-  var url = Uri.parse('https://jsonplaceholder.typicode.com/todos/1');
-  var response = await http.get(url);
-  
-  if (response.statusCode == 200) {
-    print('Response data: ${response.body}');
-  } else {
-    print('Request failed with status: ${response.statusCode}');
-  }
-}
-class FullPage extends StatelessWidget {
-  const FullPage({Key? key}) : super(key: key);
-    @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'カレンダーアプリ',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: CalendarPage(),
-    );
-  }
-}
-
-  
-
-/*
+class FullPage extends StatefulWidget {
   @override
-  Widget build(BuildContext content) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("mahiro"),
-      ),
-      body: Center(
-        child: Text(overflow: TextOverflow.fade, maxLines: 1, 'mahiro'),
-      ),
-    );
+  _FullPageState createState() => _FullPageState();
+}
+
+class _FullPageState extends State<FullPage> {
+  DateTime selectedDate = DateTime.now();
+  Map<DateTime, bool> attendance = {}; // 出欠データを保存するマップ
+  bool isLoading = false; // 天気データのロード中かどうか
+  String? errorMessage; // エラーメッセージ用
+  var weatherData; // 取得した天気データを格納する変数
+
+  // 出欠確認機能：その日の日付に出欠をトグル
+  void toggleAttendance(DateTime date) {
+    setState(() {
+      attendance[date] = !(attendance[date] ?? false);
+    });
   }
-}
-*/
 
-/*
-void main() {
-  runApp(MyApp());
-}
+  // 天気データを取得するメソッド
+  Future<void> updateWeather() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'カレンダーアプリ',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: CalendarPage(),
-    );
-  }
-}
-*/
-
-// MyAppクラスを定義
-
-
-// 天気情報を取得する関数
-Future<Map<String, dynamic>> fetchWeather(double lat, double lon) async {
-  final apiKey = '812e77b899354f40bf691831242509'; // OpenWeatherMapのAPIキー
-  final url = 'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric';
-  final response = await http.get(Uri.parse(url));
-
-  if (response.statusCode == 200) {
-    return json.decode(response.body);
-  } else {
-    throw Exception('Failed to load weather');
-  }
-}
-
-// 天気表示用のウィジェット
-class WeatherWidget extends StatelessWidget {
-  final double lat;
-  final double lon;
-
-  WeatherWidget({required this.lat, required this.lon});
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: fetchWeather(lat, lon),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else {
-          final weather = snapshot.data!;
-          return Column(
-            children: [
-              Text('天気: ${weather['weather'][0]['description']}'),
-              Text('温度: ${weather['main']['temp']} °C'),
-            ],
-          );
-        }
-      },
-    );
-  }
-}
-
-class CalendarPage extends StatefulWidget {
-  @override
-  _CalendarPageState createState() => _CalendarPageState();
-}
-
-class _CalendarPageState extends State<CalendarPage> {
-  DateTime _selectedDay = DateTime.now();
-  DateTime _focusedDay = DateTime.now();
-  Map<DateTime, String> _memos = {};
-
-  /*
-  // 天気APIから天気情報を取得する関数
-  Future<Map<String, dynamic>> fetchWeather(double lat, double lon) async {
-    final apiKey = '812e77b899354f40bf691831242509';  // OpenWeatherMapのAPIキーをここに入力
-    final url = 'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric';
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to load weather');
+    try {
+      // 天気データ取得ロジックを呼び出す（都市名は「Tokyo」を指定）
+      var data = await fetchWeatherData("Tokyo");
+      setState(() {
+        weatherData = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = '天気データの取得に失敗しました: $e';
+        isLoading = false;
+      });
     }
   }
-  */
+
+  @override
+  void initState() {
+    super.initState();
+    updateWeather(); // 初期状態で天気データを取得
+  }
 
   @override
   Widget build(BuildContext context) {
+    Intl.defaultLocale=Localizations.localeOf(context).toString();
     return Scaffold(
       appBar: AppBar(
-        title: Text('カレンダー'),
+        title: Text('カレンダーと出欠確認'),
+        actions:[]
       ),
       body: Column(
-        children: [
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          // カレンダー部分
           TableCalendar(
             firstDay: DateTime.utc(2000, 1, 1),
-            lastDay: DateTime.utc(2050, 12, 31),
-            focusedDay: _focusedDay,
+            lastDay: DateTime.utc(2100, 12, 31),
+            focusedDay: selectedDate,
+            headerVisible: false,
             selectedDayPredicate: (day) {
-              return isSameDay(_selectedDay, day);
+              return isSameDay(selectedDate, day);
             },
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
+                selectedDate = selectedDay;
+                updateWeather(); // 日付選択時に天気情報を更新
               });
-              
-              // メモページに遷移
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MemoPage(
-                    selectedDay: _selectedDay,
-                    memo: _memos[_selectedDay] ?? '',
-                    onSave: (String memo) {
-                      setState(() {
-                        _memos[_selectedDay] = memo;
-                      });
-                    },
-                  ),
-                ),
-              );
             },
           ),
-          SizedBox(height: 20),
-          WeatherWidget(lat: 35.68, lon: 139.76),  // 東京の緯度経度（任意で変更可能）
+          SizedBox(height: 20.0),
+          Text("選択した日: ${DateFormat('yyyy年MM月dd日').format(selectedDate)}",
+          style: TextStyle(fontSize: 20),
+          ),
+
+          
+          SizedBox(height: 20.0),
+
+          // 天気情報の表示部分
+          isLoading
+              ? CircularProgressIndicator() // ローディング中はスピナーを表示
+              : errorMessage != null
+                  ? Text(errorMessage!) // エラーメッセージを表示
+                  : weatherData != null
+                      ? Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '都市: ${weatherData['city']['name']}',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                '気温: ${weatherData['list'][0]['main']['temp']} °C',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                '天気: ${weatherData['list'][0]['weather'][0]['description']}',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                '風速: ${weatherData['list'][0]['wind']['speed']} m/s',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                '湿度: ${weatherData['list'][0]['main']['humidity']}%',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Text('天気データがありません'),
         ],
       ),
     );
   }
 }
-
-/*
-class WeatherWidget extends StatelessWidget {
-  final double lat;
-  final double lon;
-
-  WeatherWidget({required this.lat, required this.lon});
-
-  Future<Map<String, dynamic>> fetchWeather(double lat, double lon) async {
-    final apiKey = 'Y812e77b899354f40bf691831242509';  // OpenWeatherMapのAPIキーを入力
-    final url = 'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric';
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to load weather');
-    }
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: fetchWeather(lat, lon),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else {
-          final weather = snapshot.data!;
-          return Column(
-            children: [
-              Text('天気: ${weather['weather'][0]['description']}'),
-              Text('温度: ${weather['main']['temp']} °C'),
-            ],
-          );
-        }
-      },
-    );
-  }
-}
-*/
-
-
-class MemoPage extends StatefulWidget {
-  final DateTime selectedDay;
-  final String memo;
-  final Function(String) onSave;
-
-  MemoPage({
-    required this.selectedDay,
-    required this.memo,
-    required this.onSave,
-  });
-
-  @override
-  _MemoPageState createState() => _MemoPageState();
-}
-
-class _MemoPageState extends State<MemoPage> {
-  late TextEditingController _memoController;
-
-  @override
-  void initState() {
-    super.initState();
-    _memoController = TextEditingController(text: widget.memo);
-  }
-
-  @override
-  void dispose() {
-    _memoController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('メモ (${widget.selectedDay.toLocal()})'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _memoController,
-              decoration: InputDecoration(
-                labelText: 'メモを入力してください',
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                widget.onSave(_memoController.text);
-                Navigator.pop(context);
-              },
-              child: Text('保存'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
