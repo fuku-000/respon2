@@ -30,7 +30,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  intl: ^0.17.0  # 日付フォーマット用のパッケージ
+    
+  http: ^1.2.2
+  table_calendar: ^3.1.2   # バージョンを適宜設定してください
+
+  intl: ^0.19.0  # 日付フォーマット用のパッケージ
   shared_preferences: ^2.0.9 
 
 
@@ -48,7 +52,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^3.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
