@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'fuku.dart';
 import 'full.dart';
 import 'yuki.dart';
 import 'ayataka.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebaseを初期化する
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -77,11 +85,11 @@ class _MyHomePageState extends State<MyHomePage> {
               child: const Text('Go to Full Page'),
             ),
             ElevatedButton(
-              onPressed: () => _navigateToPage(const YukiPage()),
+              onPressed: () => _navigateToPage(yukiPage()),
               child: const Text('Go to Yuki Page'),
             ),
             ElevatedButton(
-              onPressed: () => _navigateToPage(const AyatakaPage()),
+              onPressed: () => _navigateToPage(AyatakaPage()),
               child: const Text('Go to Ayataka Page'),
             ),
           ],
