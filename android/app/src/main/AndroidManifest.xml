@@ -1,6 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.hukuhuku.respon2">
     <application
-        android:label="respon2"
+        android:label="com.hukuhuku.respon2"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
