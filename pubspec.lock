@@ -105,6 +105,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
+
   firebase_auth:
     dependency: "direct main"
     description:
@@ -153,6 +154,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.18.1"
+    
   flutter:
     dependency: "direct main"
     description: flutter
@@ -165,7 +167,14 @@ packages:
       sha256: "3f41d009ba7172d5ff9be5f6e6e6abb4300e263aab8866d2a0842ed2a70f8f0c"
       url: "https://pub.dev"
     source: hosted
+
     version: "4.0.0"
+  flutter_localizations:
+    dependency: "direct main"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
+
   flutter_test:
     dependency: "direct dev"
     description: flutter
