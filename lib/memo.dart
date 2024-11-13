@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'weather.dart'; // 天気データを取得するメソッドをインポート
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 import 'dart:convert';
 
 class FullPage extends StatefulWidget {
@@ -14,20 +13,18 @@ class _FullPageState extends State<FullPage> {
   DateTime selectedDate = DateTime.now();
   Map<DateTime, String> notes = {}; // 日付ごとのメモを保持するマップ
   TextEditingController noteController = TextEditingController();
-  bool isLoading = false; // 天気データのロード中かどうか
-  String? errorMessage; // エラーメッセージ用
-  var weatherData; // 取得した天気データを格納する変数
 
   @override
   void initState() {
     super.initState();
     loadNotes(); // 保存されたメモをロード
-    updateWeather(); // 初期状態で天気データを取得
   }
+
 
   // メモの保存
   Future<void> saveNotes() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    // notesマップをJSON文字列に変換して保存
     Map<String, String> notesStringMap = notes.map((key, value) =>
       MapEntry(DateFormat('yyyy-MM-dd').format(key), value));
     String encodedNotes = jsonEncode(notesStringMap); // JSON文字列に変換
@@ -39,6 +36,7 @@ class _FullPageState extends State<FullPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? savedNotes = prefs.getString('notes');
     if (savedNotes != null) {
+      // JSON文字列をMapに変換して読み込む
       Map<String, dynamic> decodedNotes = jsonDecode(savedNotes);
       setState(() {
         notes = decodedNotes.map((key, value) =>
@@ -54,7 +52,7 @@ class _FullPageState extends State<FullPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('メモを入力 (${DateFormat('yyyy年MM月dd日').format(selectedDate)})'),
+          title: Text('メモを入力'),
           content: TextField(
             controller: noteController,
             maxLines: 3,
@@ -77,33 +75,12 @@ class _FullPageState extends State<FullPage> {
     );
   }
 
-  // 天気データを取得するメソッド
-  Future<void> updateWeather() async {
-    setState(() {
-      isLoading = true;
-      errorMessage = null;
-    });
-
-    try {
-      var data = await fetchWeatherData("Tokyo");
-      setState(() {
-        weatherData = data;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        errorMessage = '天気データの取得に失敗しました: $e';
-        isLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    Intl.defaultLocale = Localizations.localeOf(context).toString();
     return Scaffold(
       appBar: AppBar(
-        title: Text('カレンダーと出欠確認'),
+        title: Text('カレンダーとメモ'),
+        actions: [],
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -119,17 +96,14 @@ class _FullPageState extends State<FullPage> {
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
                 selectedDate = selectedDay;
-                updateWeather(); // 日付選択時に天気情報を更新
               });
             },
           ),
           SizedBox(height: 20.0),
-          Text(
-            "選択した日: ${DateFormat('yyyy年MM月dd日').format(selectedDate)}",
-            style: TextStyle(fontSize: 20),
-          ),
+          Text("選択した日: ${DateFormat('yyyy年MM月dd日').format(selectedDate)}",
+              style: TextStyle(fontSize: 20)),
           SizedBox(height: 20.0),
-
+          
           // メモ追加ボタン
           ElevatedButton(
             onPressed: showNoteDialog,
@@ -142,49 +116,10 @@ class _FullPageState extends State<FullPage> {
             notes[selectedDate] ?? 'メモがありません',
             style: TextStyle(fontSize: 18),
           ),
-          SizedBox(height: 20.0),
-
-          // 天気情報の表示部分
-          isLoading
-              ? CircularProgressIndicator()
-              : errorMessage != null
-                  ? Text(errorMessage!)
-                  : weatherData != null
-                      ? Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '都市: ${weatherData['city']['name']}',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '気温: ${weatherData['list'][0]['main']['temp']} °C',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '天気: ${weatherData['list'][0]['weather'][0]['description']}',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '風速: ${weatherData['list'][0]['wind']['speed']} m/s',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '湿度: ${weatherData['list'][0]['main']['humidity']}%',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ],
-                          ),
-                        )
-                      : Text('天気データがありません'),
         ],
       ),
     );
   }
 }
+
+
