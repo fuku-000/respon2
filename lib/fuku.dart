@@ -33,9 +33,13 @@ class _FukuPageState extends State<FukuPage> {
   }
 
   // スタンプ情報を SharedPreferences に保存する
-  Future<void> _saveStampData(int index, DateTime date) async {
+  Future<void> _saveStampData(int index, DateTime? date) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('stamp_$index', date.toIso8601String());
+    if (date == null) {
+      await prefs.remove('stamp_$index');
+    } else {
+      await prefs.setString('stamp_$index', date.toIso8601String());
+    }
   }
 
   @override
@@ -55,16 +59,17 @@ class _FukuPageState extends State<FukuPage> {
           itemCount: 20,
           itemBuilder: (context, index) {
             return GestureDetector(
-              onTap: () {
-                setState(() {
+              onTap: () async {
                   if (_stampDates[index] == null) {
                     // スタンプを押した時の処理
                     DateTime now = DateTime.now();
-                    _stampDates[index] = now;
-                    _saveStampData(index, now); // 保存する
+                    setState(() {
+                      _stampDates[index] = now;
+                    });
+                    await _saveStampData(index, now); // 保存する
                   } else {
                     // すでにスタンプが押されている場合は詳細ページへ遷移
-                    Navigator.push(
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => StampDetailPage(
@@ -73,8 +78,14 @@ class _FukuPageState extends State<FukuPage> {
                         ),
                       ),
                     );
+                    // result が true の場合は取り消し処理
+                    if (result == true) {
+                      setState(() {
+                        _stampDates[index] = null;
+                      });
+                      await _saveStampData(index, null); // データを削除
+                    }
                   }
-                });
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
