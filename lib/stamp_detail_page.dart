@@ -39,6 +39,43 @@ class StampDetailPage extends StatelessWidget {
                 DateFormat('yyyy/MM/dd HH:mm:ss').format(stampDate),
                 style: const TextStyle(fontSize: 18),
               ),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () async {
+                  // 確認ポップアップ表示
+                  bool confirm = await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('確認'),
+                        content: const Text('スタンプを取り消しますか？'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(false);
+                            },
+                            child: const Text('キャンセル'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(true);
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  // 確認後、取り消し実行
+                  if (confirm == true) {
+                    Navigator.of(context).pop(true);
+                  }
+                },
+                child: const Text('スタンプを取り消す'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
+              ),
             ],
           ),
         ),
