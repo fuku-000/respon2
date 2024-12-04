@@ -29,7 +29,7 @@ class _LoginPage extends State<AyatakaPage> {
       //ホームページへ遷移する処理を書く
       await Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) {
-          return FukuPage();
+          return FullPage();
         }),
       );
     } else {
