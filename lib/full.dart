@@ -101,104 +101,107 @@ class _FullPageState extends State<FullPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    Intl.defaultLocale = Localizations.localeOf(context).toString();
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('カレンダーと出欠確認'),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          // カレンダー部分
-          TableCalendar(
-  firstDay: DateTime.utc(2000, 1, 1),
-  lastDay: DateTime.utc(2100, 12, 31),
-  focusedDay: selectedDate,
-  selectedDayPredicate: (day) {
-    return isSameDay(selectedDate, day);
-  },
-  onDaySelected: (selectedDay, focusedDay) {
-    setState(() {
-      selectedDate = selectedDay;
-    });
-  },
-  calendarBuilders: CalendarBuilders(
-    defaultBuilder: (context, day, focusedDay) {
-      // 土曜日は青、日曜日は赤の背景
-      if (day.weekday == DateTime.saturday) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Color(0xFF007BFF), // 青色
-            shape: BoxShape.circle, // 丸い形状
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            '${day.day}', // 日付
-            style: TextStyle(color: Colors.white), // テキストは白色
-          ),
-        );
-      } else if (day.weekday == DateTime.sunday) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Color(0xFFFF0000), // 赤色
-            shape: BoxShape.circle, // 丸い形状
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            '${day.day}', // 日付
-            style: TextStyle(color: Colors.white), // テキストは白色
-          ),
-        );
-      }
-      return null; // 他の日はデフォルト表示
-    },
-  ),
-),
+Widget build(BuildContext context) {
+  Intl.defaultLocale = Localizations.localeOf(context).toString();
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('カレンダーと出欠確認'),
+    ),
+    body: SingleChildScrollView( // スクロール可能にする
+      child: Padding(
+        padding: const EdgeInsets.all(16.0), // 余白を追加
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start, // 左揃えに調整
+          children: <Widget>[
+            // カレンダー部分
+            TableCalendar(
+              firstDay: DateTime.utc(2000, 1, 1),
+              lastDay: DateTime.utc(2100, 12, 31),
+              focusedDay: selectedDate,
+              selectedDayPredicate: (day) {
+                return isSameDay(selectedDate, day);
+              },
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  selectedDate = selectedDay;
+                });
+              },
+              calendarStyle: CalendarStyle(
+                outsideDaysVisible: false,
+                todayDecoration: BoxDecoration(
+                  color: Colors.pink,
+                  shape: BoxShape.circle,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: Colors.teal,
+                  shape: BoxShape.circle,
+                ),
+                weekendTextStyle: TextStyle(
+                  color: Colors.red,
+                ),
+                defaultTextStyle: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                titleTextStyle: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
+                leftChevronIcon: Icon(
+                  Icons.arrow_back_ios,
+                  color: Colors.deepPurple,
+                ),
+                rightChevronIcon: Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.deepPurple,
+                ),
+              ),
+            ),
+            SizedBox(height: 20.0),
+            Text(
+              "選択した日: ${DateFormat('yyyy年MM月dd日').format(selectedDate)}",
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 20.0),
 
-          SizedBox(height: 20.0),
-          Text(
-            "選択した日: ${DateFormat('yyyy年MM月dd日').format(selectedDate)}",
-            style: TextStyle(fontSize: 20),
-          ),
-          SizedBox(height: 20.0),
+            // メモ追加ボタン
+            ElevatedButton(
+              onPressed: showNoteDialog,
+              child: Text("メモを追加"),
+            ),
+            SizedBox(height: 20.0),
 
-          // メモ追加ボタン
-          ElevatedButton(
-            onPressed: showNoteDialog,
-            child: Text("メモを追加"),
-          ),
-          SizedBox(height: 20.0),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FukuPage()),
+                );
+              },
+              child: Text("スタンプページへ"),
+            ),
+            SizedBox(height: 20.0),
 
-          ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => FukuPage(
-              )),
-            );
-          },
-          child: Text("スタンプページへ"),
-        ),
-        SizedBox(height: 20.0),
+            // 選択された日付のメモの表示
+            Text(
+              notes[selectedDate] ?? 'メモがありません',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 20.0),
 
-          
-          // 選択された日付のメモの表示
-          Text(
-            notes[selectedDate] ?? 'メモがありません',
-            style: TextStyle(fontSize: 18),
-          ),
-          SizedBox(height: 20.0),
-
-          // 天気情報の表示部分
-          isLoading
-              ? CircularProgressIndicator()
-              : errorMessage != null
-                  ? Text(errorMessage!)
-                  : weatherData != null
-                      ? Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
+            // 天気情報の表示部分
+            isLoading
+                ? CircularProgressIndicator()
+                : errorMessage != null
+                    ? Text(errorMessage!)
+                    : weatherData != null
+                        ? Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -226,11 +229,12 @@ class _FullPageState extends State<FullPage> {
                                 style: TextStyle(fontSize: 18),
                               ),
                             ],
-                          ),
-                        )
-                      : Text('天気データがありません'),
-        ],
+                          )
+                        : Text('天気データがありません'),
+          ],
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
