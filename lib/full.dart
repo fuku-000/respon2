@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:respon2/fuku.dart';
 
-
 class FullPage extends StatefulWidget {
   @override
   _FullPageState createState() => _FullPageState();
@@ -30,8 +29,8 @@ class _FullPageState extends State<FullPage> {
   // メモの保存
   Future<void> saveNotes() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    Map<String, String> notesStringMap = notes.map((key, value) =>
-      MapEntry(DateFormat('yyyy-MM-dd').format(key), value));
+    Map<String, String> notesStringMap = notes.map(
+        (key, value) => MapEntry(DateFormat('yyyy-MM-dd').format(key), value));
     String encodedNotes = jsonEncode(notesStringMap); // JSON文字列に変換
     await prefs.setString('notes', encodedNotes);
   }
@@ -44,7 +43,7 @@ class _FullPageState extends State<FullPage> {
       Map<String, dynamic> decodedNotes = jsonDecode(savedNotes);
       setState(() {
         notes = decodedNotes.map((key, value) =>
-          MapEntry(DateFormat('yyyy-MM-dd').parse(key), value.toString()));
+            MapEntry(DateFormat('yyyy-MM-dd').parse(key), value.toString()));
       });
     }
   }
@@ -56,7 +55,8 @@ class _FullPageState extends State<FullPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('メモを入力 (${DateFormat('yyyy年MM月dd日').format(selectedDate)})'),
+          title:
+              Text('メモを入力 (${DateFormat('yyyy年MM月dd日').format(selectedDate)})'),
           content: TextField(
             controller: noteController,
             maxLines: 3,
@@ -204,72 +204,71 @@ Widget build(BuildContext context) {
               style: TextStyle(fontSize: 20),
             ),
             SizedBox(height: 20.0),
+              // メモ追加ボタン
+              ElevatedButton(
+                onPressed: showNoteDialog,
+                child: Text("メモを追加"),
+              ),
+              SizedBox(height: 20.0),
 
-            // メモ追加ボタン
-            ElevatedButton(
-              onPressed: showNoteDialog,
-              child: Text("メモを追加"),
-            ),
-            SizedBox(height: 20.0),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FukuPage()),
+                  );
+                },
+                child: Text("スタンプページへ"),
+              ),
+              SizedBox(height: 20.0),
 
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FukuPage()),
-                );
-              },
-              child: Text("スタンプページへ"),
-            ),
-            SizedBox(height: 20.0),
+              // 選択された日付のメモの表示
+              Text(
+                notes[selectedDate] ?? 'メモがありません',
+                style: TextStyle(fontSize: 18),
+              ),
+              SizedBox(height: 20.0),
 
-            // 選択された日付のメモの表示
-            Text(
-              notes[selectedDate] ?? 'メモがありません',
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 20.0),
-
-            // 天気情報の表示部分
-            isLoading
-                ? CircularProgressIndicator()
-                : errorMessage != null
-                    ? Text(errorMessage!)
-                    : weatherData != null
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '都市: ${weatherData['city']['name']}',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '気温: ${weatherData['list'][0]['main']['temp']} °C',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '天気: ${weatherData['list'][0]['weather'][0]['description']}',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '風速: ${weatherData['list'][0]['wind']['speed']} m/s',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '湿度: ${weatherData['list'][0]['main']['humidity']}%',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ],
-                          )
-                        : Text('天気データがありません'),
-          ],
+              // 天気情報の表示部分
+              isLoading
+                  ? CircularProgressIndicator()
+                  : errorMessage != null
+                      ? Text(errorMessage!)
+                      : weatherData != null
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '都市: ${weatherData['city']['name']}',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  '気温: ${weatherData['list'][0]['main']['temp']} °C',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  '天気: ${weatherData['list'][0]['weather'][0]['description']}',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  '風速: ${weatherData['list'][0]['wind']['speed']} m/s',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  '湿度: ${weatherData['list'][0]['main']['humidity']}%',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                              ],
+                            )
+                          : Text('天気データがありません'),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

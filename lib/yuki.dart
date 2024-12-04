@@ -41,6 +41,14 @@ class _createAccountPage extends State<yukiPage> {
     }
   }
 
+  void test1() {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null) {
+        getName();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,7 +61,7 @@ class _createAccountPage extends State<yukiPage> {
           children: <Widget>[
             const SizedBox(height: 20),
             const Text(
-              'Login',
+              'アカウント作成',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -90,7 +98,7 @@ class _createAccountPage extends State<yukiPage> {
               alignment: Alignment.bottomRight,
               child: TextButton(
                 onPressed: () {
-                  // 管理者用のナビゲーションをここに実装
+                  test1();
                 },
                 child: const Text('管理者はこちらから→'),
               ),

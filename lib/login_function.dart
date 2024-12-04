@@ -25,7 +25,10 @@ Future<bool> signupUser(String username, String email, String password) async {
     UserCredential userCredential = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
     //Firestore Databaseにユーザ情報を追加する(ここからユーザ名の取得、予定と紐付けetc)
-    await FirebaseFirestore.instance.collection('Users').add({
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .set({
       'uid': FirebaseAuth.instance.currentUser?.uid,
       'Username': username,
       'Email': email
@@ -37,4 +40,13 @@ Future<bool> signupUser(String username, String email, String password) async {
     print('エラー: $e');
     return false; //失敗してたらfalseを返す
   }
+}
+
+Future<String> getName() async {
+  DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+      .collection("Users")
+      .doc(FirebaseAuth.instance.currentUser?.uid)
+      .get();
+
+  return docSnapshot.get("Username");
 }
