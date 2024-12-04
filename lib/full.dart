@@ -101,76 +101,109 @@ class _FullPageState extends State<FullPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    Intl.defaultLocale = Localizations.localeOf(context).toString();
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('カレンダーと出欠確認'),
-      ),
-      body: SingleChildScrollView(
-        // スクロール可能にする
-        child: Padding(
-          padding: const EdgeInsets.all(16.0), // 余白を追加
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start, // 左揃えに調整
-            children: <Widget>[
-              // カレンダー部分
-              TableCalendar(
-                firstDay: DateTime.utc(2000, 1, 1),
-                lastDay: DateTime.utc(2100, 12, 31),
-                focusedDay: selectedDate,
-                selectedDayPredicate: (day) {
-                  return isSameDay(selectedDate, day);
-                },
-                onDaySelected: (selectedDay, focusedDay) {
-                  setState(() {
-                    selectedDate = selectedDay;
-                  });
-                },
-                calendarStyle: CalendarStyle(
-                  outsideDaysVisible: false,
-                  todayDecoration: BoxDecoration(
-                    color: Colors.pink,
-                    shape: BoxShape.circle,
-                  ),
-                  selectedDecoration: BoxDecoration(
-                    color: Colors.teal,
-                    shape: BoxShape.circle,
-                  ),
-                  weekendTextStyle: TextStyle(
-                    color: Colors.red,
-                  ),
-                  defaultTextStyle: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                headerStyle: HeaderStyle(
-                  formatButtonVisible: false,
-                  titleCentered: true,
-                  titleTextStyle: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
-                  leftChevronIcon: Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.deepPurple,
-                  ),
-                  rightChevronIcon: Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-              ),
-              SizedBox(height: 20.0),
-              Text(
-                "選択した日: ${DateFormat('yyyy年MM月dd日').format(selectedDate)}",
-                style: TextStyle(fontSize: 20),
-              ),
-              SizedBox(height: 20.0),
+Widget build(BuildContext context) {
+  Intl.defaultLocale = Localizations.localeOf(context).toString();
+  return Scaffold(
+    appBar: AppBar(
+  title: Text(
+    'カレンダーと出欠確認',
+    style: TextStyle(
+      fontSize: 20, // フォントサイズ
+      fontWeight: FontWeight.bold, // 太字
+      color: const Color.fromARGB(255, 255, 255, 255), // テキストの色
+    ),
+  ),
+  backgroundColor: Color(0xFFAFE3B7), // AppBar の背景色
+  centerTitle: true, // タイトルを中央揃え
+),
 
+    body: SingleChildScrollView( // スクロール可能にする
+      child: Padding(
+        padding: const EdgeInsets.all(16.0), // 余白を追加
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,// 左揃えに調整
+          children: <Widget>[
+            // カレンダー部分
+            TableCalendar(
+  firstDay: DateTime.utc(2000, 1, 1),
+  lastDay: DateTime.utc(2100, 12, 31),
+  focusedDay: selectedDate,
+  selectedDayPredicate: (day) {
+    return isSameDay(selectedDate, day);
+  },
+  onDaySelected: (selectedDay, focusedDay) {
+    setState(() {
+      selectedDate = selectedDay;
+    });
+  },
+  calendarStyle: CalendarStyle(
+    outsideDaysVisible: false,
+    todayDecoration: BoxDecoration(
+      color: Colors.pink,
+      shape: BoxShape.circle,
+    ),
+    selectedDecoration: BoxDecoration(
+      color: Colors.teal,
+      shape: BoxShape.circle,
+    ),
+    defaultTextStyle: TextStyle(
+      color: Colors.black,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+  headerStyle: HeaderStyle(
+    formatButtonVisible: false,
+    titleCentered: true,
+    titleTextStyle: TextStyle(
+      fontSize: 20.0,
+      fontWeight: FontWeight.bold,
+      color: Color(0xFFAFE3B7),
+    ),
+    leftChevronIcon: Icon(
+      Icons.arrow_back_ios,
+      color: Color(0xFFAFE3B7),
+    ),
+    rightChevronIcon: Icon(
+      Icons.arrow_forward_ios,
+      color: Color(0xFFAFE3B7),
+    ),
+  ),
+  calendarBuilders: CalendarBuilders(
+    defaultBuilder: (context, day, focusedDay) {
+      // 土曜日
+      if (day.weekday == DateTime.saturday) {
+        return Center(
+          child: Text(
+            '${day.day}',
+            style: TextStyle(color: Color(0xFF5569AB)), // 土曜日のスタイル
+          ),
+        );
+      }
+      // 日曜日
+      if (day.weekday == DateTime.sunday) {
+        return Center(
+          child: Text(
+            '${day.day}',
+            style: TextStyle(color: Color(0xFFB51212)), // 日曜日のスタイル
+          ),
+        );
+      }
+      // 他の日
+      return null;
+    },
+  ),
+),
+
+
+
+
+            SizedBox(height: 20.0),
+            Text(
+              "選択した日: ${DateFormat('yyyy年MM月dd日').format(selectedDate)}",
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 20.0),
               // メモ追加ボタン
               ElevatedButton(
                 onPressed: showNoteDialog,
