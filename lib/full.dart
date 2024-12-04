@@ -4,6 +4,8 @@ import 'weather.dart'; // 天気データを取得するメソッドをインポ
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:respon2/fuku.dart';
+
 
 class FullPage extends StatefulWidget {
   @override
@@ -99,60 +101,107 @@ class _FullPageState extends State<FullPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    Intl.defaultLocale = Localizations.localeOf(context).toString();
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('カレンダーと出欠確認'),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          // カレンダー部分
-          TableCalendar(
-            firstDay: DateTime.utc(2000, 1, 1),
-            lastDay: DateTime.utc(2100, 12, 31),
-            focusedDay: selectedDate,
-            selectedDayPredicate: (day) {
-              return isSameDay(selectedDate, day);
-            },
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                selectedDate = selectedDay;
-                updateWeather(); // 日付選択時に天気情報を更新
-              });
-            },
-          ),
-          SizedBox(height: 20.0),
-          Text(
-            "選択した日: ${DateFormat('yyyy年MM月dd日').format(selectedDate)}",
-            style: TextStyle(fontSize: 20),
-          ),
-          SizedBox(height: 20.0),
+Widget build(BuildContext context) {
+  Intl.defaultLocale = Localizations.localeOf(context).toString();
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('カレンダーと出欠確認'),
+    ),
+    body: SingleChildScrollView( // スクロール可能にする
+      child: Padding(
+        padding: const EdgeInsets.all(16.0), // 余白を追加
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start, // 左揃えに調整
+          children: <Widget>[
+            // カレンダー部分
+            TableCalendar(
+              firstDay: DateTime.utc(2000, 1, 1),
+              lastDay: DateTime.utc(2100, 12, 31),
+              focusedDay: selectedDate,
+              selectedDayPredicate: (day) {
+                return isSameDay(selectedDate, day);
+              },
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  selectedDate = selectedDay;
+                });
+              },
+              calendarStyle: CalendarStyle(
+                outsideDaysVisible: false,
+                todayDecoration: BoxDecoration(
+                  color: Colors.pink,
+                  shape: BoxShape.circle,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: Colors.teal,
+                  shape: BoxShape.circle,
+                ),
+                weekendTextStyle: TextStyle(
+                  color: Colors.red,
+                ),
+                defaultTextStyle: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                titleTextStyle: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
+                leftChevronIcon: Icon(
+                  Icons.arrow_back_ios,
+                  color: Colors.deepPurple,
+                ),
+                rightChevronIcon: Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.deepPurple,
+                ),
+              ),
+            ),
+            SizedBox(height: 20.0),
+            Text(
+              "選択した日: ${DateFormat('yyyy年MM月dd日').format(selectedDate)}",
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 20.0),
 
-          // メモ追加ボタン
-          ElevatedButton(
-            onPressed: showNoteDialog,
-            child: Text("メモを追加"),
-          ),
-          SizedBox(height: 20.0),
+            // メモ追加ボタン
+            ElevatedButton(
+              onPressed: showNoteDialog,
+              child: Text("メモを追加"),
+            ),
+            SizedBox(height: 20.0),
 
-          // 選択された日付のメモの表示
-          Text(
-            notes[selectedDate] ?? 'メモがありません',
-            style: TextStyle(fontSize: 18),
-          ),
-          SizedBox(height: 20.0),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FukuPage()),
+                );
+              },
+              child: Text("スタンプページへ"),
+            ),
+            SizedBox(height: 20.0),
 
-          // 天気情報の表示部分
-          isLoading
-              ? CircularProgressIndicator()
-              : errorMessage != null
-                  ? Text(errorMessage!)
-                  : weatherData != null
-                      ? Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
+            // 選択された日付のメモの表示
+            Text(
+              notes[selectedDate] ?? 'メモがありません',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 20.0),
+
+            // 天気情報の表示部分
+            isLoading
+                ? CircularProgressIndicator()
+                : errorMessage != null
+                    ? Text(errorMessage!)
+                    : weatherData != null
+                        ? Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -180,11 +229,12 @@ class _FullPageState extends State<FullPage> {
                                 style: TextStyle(fontSize: 18),
                               ),
                             ],
-                          ),
-                        )
-                      : Text('天気データがありません'),
-        ],
+                          )
+                        : Text('天気データがありません'),
+          ],
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
