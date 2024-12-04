@@ -4,6 +4,8 @@ import 'weather.dart'; // 天気データを取得するメソッドをインポ
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:respon2/fuku.dart';
+
 
 class FullPage extends StatefulWidget {
   @override
@@ -110,19 +112,50 @@ class _FullPageState extends State<FullPage> {
         children: <Widget>[
           // カレンダー部分
           TableCalendar(
-            firstDay: DateTime.utc(2000, 1, 1),
-            lastDay: DateTime.utc(2100, 12, 31),
-            focusedDay: selectedDate,
-            selectedDayPredicate: (day) {
-              return isSameDay(selectedDate, day);
-            },
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                selectedDate = selectedDay;
-                updateWeather(); // 日付選択時に天気情報を更新
-              });
-            },
+  firstDay: DateTime.utc(2000, 1, 1),
+  lastDay: DateTime.utc(2100, 12, 31),
+  focusedDay: selectedDate,
+  selectedDayPredicate: (day) {
+    return isSameDay(selectedDate, day);
+  },
+  onDaySelected: (selectedDay, focusedDay) {
+    setState(() {
+      selectedDate = selectedDay;
+    });
+  },
+  calendarBuilders: CalendarBuilders(
+    defaultBuilder: (context, day, focusedDay) {
+      // 土曜日は青、日曜日は赤の背景
+      if (day.weekday == DateTime.saturday) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Color(0xFF007BFF), // 青色
+            shape: BoxShape.circle, // 丸い形状
           ),
+          alignment: Alignment.center,
+          child: Text(
+            '${day.day}', // 日付
+            style: TextStyle(color: Colors.white), // テキストは白色
+          ),
+        );
+      } else if (day.weekday == DateTime.sunday) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Color(0xFFFF0000), // 赤色
+            shape: BoxShape.circle, // 丸い形状
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            '${day.day}', // 日付
+            style: TextStyle(color: Colors.white), // テキストは白色
+          ),
+        );
+      }
+      return null; // 他の日はデフォルト表示
+    },
+  ),
+),
+
           SizedBox(height: 20.0),
           Text(
             "選択した日: ${DateFormat('yyyy年MM月dd日').format(selectedDate)}",
@@ -137,6 +170,19 @@ class _FullPageState extends State<FullPage> {
           ),
           SizedBox(height: 20.0),
 
+          ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => FukuPage(
+              )),
+            );
+          },
+          child: Text("スタンプページへ"),
+        ),
+        SizedBox(height: 20.0),
+
+          
           // 選択された日付のメモの表示
           Text(
             notes[selectedDate] ?? 'メモがありません',
