@@ -1,41 +1,78 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'stamp_detail_page.dart';
 
 class FukuPage extends StatefulWidget {
   const FukuPage({super.key});
-
   @override
   _FukuPageState createState() => _FukuPageState();
 }
 
 class _FukuPageState extends State<FukuPage> {
   final List<DateTime?> _stampDates = List.generate(20, (index) => null);
-
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  late String userId;
   @override
   void initState() {
     super.initState();
-    _loadStampData(); // 起動時に保存されたスタンプ状態をロード
+    _loadUser(); // ユーザーのロード
   }
 
-  // スタンプ情報を SharedPreferences からロードする
+  Future<void> _loadUser() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      userId = user.uid;
+      await _loadStampData(); // スタンプデータをロード
+    } else {
+      // ユーザーがログインしていない場合はエラーハンドリング
+      // ここで別のページへのリダイレクトを行うことができます
+    }
+  }
+
+  // スタンプ情報を Firestore からロードする
   Future<void> _loadStampData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    for (int i = 0; i < 20; i++) {
-      String? stampDateString = prefs.getString('stamp_$i');
-      if (stampDateString != null) {
-        setState(() {
-          _stampDates[i] = DateTime.parse(stampDateString);
-        });
+    DocumentSnapshot doc = await _firestore
+        .collection('Users')
+        .doc(userId)
+        .collection('stamp')
+        .doc('user_stamps')
+        .get();
+    if (doc.exists) {
+      Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
+      for (int i = 0; i < 20; i++) {
+        if (data != null && data.containsKey('stamp_$i')) {
+          setState(() {
+            _stampDates[i] = (data['stamp_$i'] as Timestamp).toDate();
+          });
+        }
       }
     }
   }
 
-  // スタンプ情報を SharedPreferences に保存する
-  Future<void> _saveStampData(int index, DateTime date) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('stamp_$index', date.toIso8601String());
+  // スタンプ情報を Firestore に保存する
+  Future<void> _saveStampData(int index, DateTime? date) async {
+    if (date == null) {
+      await _firestore
+          .collection('Users')
+          .doc(userId)
+          .collection('stamp')
+          .doc('user_stamps')
+          .update({
+        'stamp_$index': FieldValue.delete(),
+      });
+    } else {
+      await _firestore
+          .collection('Users')
+          .doc(userId)
+          .collection('stamp')
+          .doc('user_stamps')
+          .set({
+        'stamp_$index': Timestamp.fromDate(date),
+      }, SetOptions(merge: true));
+    }
   }
 
   @override
@@ -55,26 +92,34 @@ class _FukuPageState extends State<FukuPage> {
           itemCount: 20,
           itemBuilder: (context, index) {
             return GestureDetector(
-              onTap: () {
-                setState(() {
-                  if (_stampDates[index] == null) {
-                    // スタンプを押した時の処理
-                    DateTime now = DateTime.now();
+              onTap: () async {
+                if (_stampDates[index] == null) {
+                  // スタンプを押した時の処理
+                  DateTime now = DateTime.now();
+                  setState(() {
                     _stampDates[index] = now;
-                    _saveStampData(index, now); // 保存する
-                  } else {
-                    // すでにスタンプが押されている場合は詳細ページへ遷移
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StampDetailPage(
-                          stampDate: _stampDates[index]!,
-                          stampIndex: index + 1,
-                        ),
+                  });
+                  await _saveStampData(index, now); // 保存する
+                } else {
+                  // すでにスタンプが押されている場合は詳細ページへ遷移
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StampDetailPage(
+                        stampDate: _stampDates[index]!,
+                        stampIndex: index + 1,
                       ),
-                    );
+                    ),
+                  );
+
+// result が true の場合は取り消し処理
+                  if (result == true) {
+                    setState(() {
+                      _stampDates[index] = null;
+                    });
+                    await _saveStampData(index, null); // データを削除
                   }
-                });
+                }
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
@@ -99,10 +144,12 @@ class _FukuPageState extends State<FukuPage> {
                       ? Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.star, color: Colors.white, size: 36),
+                            const Icon(Icons.star,
+                                color: Colors.white, size: 36),
                             const SizedBox(height: 5),
                             Text(
-                              DateFormat('MM/dd\nHH:mm').format(_stampDates[index]!),
+                              DateFormat('MM/dd\nHH:mm')
+                                  .format(_stampDates[index]!),
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                   fontSize: 12,
