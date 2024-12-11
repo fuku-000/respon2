@@ -1,10 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'weather.dart'; // 天気データを取得するメソッドをインポート
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'package:respon2/fuku.dart';
+import '';
 
 class FullPage extends StatefulWidget {
   @override
@@ -18,6 +21,8 @@ class _FullPageState extends State<FullPage> {
   bool isLoading = false; // 天気データのロード中かどうか
   String? errorMessage; // エラーメッセージ用
   var weatherData; // 取得した天気データを格納する変数
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -27,23 +32,35 @@ class _FullPageState extends State<FullPage> {
   }
 
   // メモの保存
-  Future<void> saveNotes() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    Map<String, String> notesStringMap = notes.map(
-        (key, value) => MapEntry(DateFormat('yyyy-MM-dd').format(key), value));
-    String encodedNotes = jsonEncode(notesStringMap); // JSON文字列に変換
-    await prefs.setString('notes', encodedNotes);
+  Future<void> saveNotes(DateTime date, String content) async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      await _firestore
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Notes')
+          .doc(DateFormat('yyyy-MM-dd').format(date))
+          .set({
+        'content': content,
+      });
+    }
   }
 
   // メモのロード
   Future<void> loadNotes() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? savedNotes = prefs.getString('notes');
-    if (savedNotes != null) {
-      Map<String, dynamic> decodedNotes = jsonDecode(savedNotes);
+    User? user = _auth.currentUser;
+    if (user != null) {
+      QuerySnapshot snapshot = await _firestore
+          .collection('Users')
+          .doc(user.uid)
+          .collection('Notes')
+          .get();
       setState(() {
-        notes = decodedNotes.map((key, value) =>
-            MapEntry(DateFormat('yyyy-MM-dd').parse(key), value.toString()));
+        notes = {}; // 既存のメモをクリア
+        for (var doc in snapshot.docs) {
+          DateTime date = DateFormat('yyyy-MM-dd').parse(doc.id);
+          notes[date] = doc['content'];
+        }
       });
     }
   }
@@ -68,7 +85,7 @@ class _FullPageState extends State<FullPage> {
                 setState(() {
                   notes[selectedDate] = noteController.text;
                 });
-                saveNotes(); // メモを保存
+                saveNotes(selectedDate, noteController.text); // メモを保存
                 Navigator.of(context).pop();
               },
               child: Text('保存'),
