@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'fuku.dart';
-import 'full.dart';  
+import 'full.dart';
 import 'weather.dart';
 import 'yuki.dart';
 import 'ayataka.dart';
@@ -22,7 +22,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -149,7 +149,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const SizedBox(height: 20),
-            
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => _navigateToPageIfAuthenticated(const FukuPage()),
@@ -159,7 +158,6 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () => _navigateToPageIfAuthenticated(FullPage()),
               child: const Text('Fullページに移動'),
             ),
-            
             ElevatedButton(
               onPressed: () => _navigateToPageIfAuthenticated(AyatakaPage()),
               child: const Text('Ayatakaページに移動'),
