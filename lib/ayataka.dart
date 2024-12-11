@@ -42,7 +42,8 @@ class _LoginPage extends State<AyatakaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(''), // スキャフォールドのタイトルを削除
+        backgroundColor: const Color(0xFF70E173), // AppBarの背景色を設定
+        title: const Text(''), // 元のコード通り、タイトルは空のままに
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -51,14 +52,24 @@ class _LoginPage extends State<AyatakaPage> {
             const SizedBox(height: 20),
             const Text(
               'Login',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF70E173), // テキストの色を設定
+              ),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
                 labelText: 'メールアドレス',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Color(0xFF70E173)), // 枠線の色
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Color(0xFF70E173)), // 枠線の色
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -66,13 +77,32 @@ class _LoginPage extends State<AyatakaPage> {
               controller: _passwordController,
               decoration: InputDecoration(
                 labelText: 'パスワード',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Color(0xFF70E173)), // 枠線の色
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Color(0xFF70E173)), // 枠線の色
+                ),
               ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF70E173), // ボタンの背景色
+              ),
+              onPressed: () {
+                // ログイン処理をここに実装
+              },
               onPressed: _loginUser,
-              child: const Text('ログイン'),
+              child: const Text(
+                'ログイン',
+                style: TextStyle(
+                  color: Colors.white, // 読みやすさのためにテキスト色は白
+                ),
+              ),
+
             ),
             const Spacer(),
             Align(
@@ -81,7 +111,12 @@ class _LoginPage extends State<AyatakaPage> {
                 onPressed: () {
                   // 管理者用のナビゲーションをここに実装
                 },
-                child: const Text('管理者はこちらから→'),
+                child: const Text(
+                  '管理者はこちらから→',
+                  style: TextStyle(
+                    color: Color(0xFF70E173), // テキストボタンの色
+                  ),
+                ),
               ),
             ),
           ],
