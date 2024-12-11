@@ -4,40 +4,47 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:respon2/fuku.dart';
 import 'package:respon2/full.dart';
 import 'package:respon2/login_function.dart';
-
+import 'package:respon2/admin_page.dart'; // AdminPage をインポート
 class AyatakaPage extends StatefulWidget {
   AyatakaPage({Key? key}) : super(key: key);
-
   @override
   _LoginPage createState() => _LoginPage();
 }
-
 class _LoginPage extends State<AyatakaPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
+  bool _obscureText = true; // 新しいプライベートフィールド
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
   void _loginUser() async {
-    String email = _emailController.text;
-    String password = _passwordController.text;
-
-    // login_functions.dartのログイン関数を呼び出す
-    bool success = await loginUser(email, password);
-
-    if (success) {
-      // ログイン成功時の処理
-      print('ログイン成功');
-      //ホームページへ遷移する処理を書く
-      await Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) {
-          return FullPage();
-        }),
-      );
-    } else {
-      // ログイン失敗時の処理
-      print('ログイン失敗');
+    try {
+      String email = _emailController.text.trim();
+      String password = _passwordController.text.trim();
+      if (email.isEmpty || password.isEmpty) {
+        _showErrorSnackbar('メールアドレスとパスワードを入力してください。');
+        return;
+      }
+      bool success = await loginUser(email, password);
+      if (success) {
+        print('ログイン成功');
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => FullPage()),
+        );
+      } else {
+        _showErrorSnackbar('ログインに失敗しました。');
+      }
+    } catch (e) {
+      _showErrorSnackbar('エラーが発生しました: $e');
     }
   }
-
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +60,7 @@ class _LoginPage extends State<AyatakaPage> {
             const Text(
               'Login',
               style: TextStyle(
+
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF70E173), // テキストの色を設定
@@ -69,12 +77,14 @@ class _LoginPage extends State<AyatakaPage> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: const BorderSide(color: Color(0xFF70E173)), // 枠線の色
+
                 ),
               ),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
+              obscureText: _obscureText,
               decoration: InputDecoration(
                 labelText: 'パスワード',
                 border: const OutlineInputBorder(),
@@ -88,6 +98,7 @@ class _LoginPage extends State<AyatakaPage> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
+
 
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF70E173), // ボタンの背景色
@@ -109,7 +120,9 @@ class _LoginPage extends State<AyatakaPage> {
               alignment: Alignment.bottomRight,
               child: TextButton(
                 onPressed: () {
-                  // 管理者用のナビゲーションをここに実装
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => AdminPage()),
+                  );
                 },
                 child: const Text(
                   '管理者はこちらから→',
@@ -125,9 +138,8 @@ class _LoginPage extends State<AyatakaPage> {
     );
   }
 }
-
-/*void main() {
-  runApp(const MaterialApp(
-    home: AyatakaPage(),
-  ));
-}*/
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MaterialApp(home: AyatakaPage()));
+}
