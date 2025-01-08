@@ -8,6 +8,7 @@ import 'weather.dart';
 import 'yuki.dart';
 import 'ayataka.dart';
 import 'login_function.dart';
+import 'notification_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_local_notifications/src/platform_specifics/android/initialization_settings.dart';
 import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel.dart';
@@ -18,10 +19,41 @@ import 'notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import 'dart:io' show Platform;
+import 'package:background_fetch/background_fetch.dart';
 
 // ローカル通知用のインスタンスを作成
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
+
+// バックグラウンド処理用のハンドラ
+void backgroundFetchHeadlessTask(HeadlessTask task) async {
+  var taskId = task.taskId;
+  var timeout = task.timeout;
+
+  if (timeout) {
+    print('[BackgroundFetch] Headless task timed-out: $taskId');
+    BackgroundFetch.finish(taskId);
+    return;
+  }
+
+  print('[BackgroundFetch] Headless event received: $taskId');
+
+  // Firebase初期化（バックグラウンドで必要な場合）
+  await Firebase.initializeApp();
+
+  try {
+    // makeMessageを呼び出して新しい文章を生成
+    //String newContent = await makeMessage();
+
+    // 通知を表示
+  } catch (e) {
+    print('Error in background task: $e');
+    // エラー時のフォールバック通知
+  }
+
+  // タスク完了を通知
+  BackgroundFetch.finish(taskId);
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +89,14 @@ void main() async {
     description: '毎日特定の時間に通知を送るためのチャンネル',
     importance: Importance.high,
   );
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (details) async {
+      // 通知タップ時の処理
+      print('Notification tapped: ${details.payload}');
+    },
+  );
+  BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
 
   runApp(const MyApp());
 }
@@ -72,7 +112,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFFAFE3B7)),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Stamp Card'),
+      home: FullPage(),
     );
   }
 }
@@ -93,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    requestExactAlarmPermission(); // Android,アプリ起動時に権限をリクエスト
+    //requestExactAlarmPermission(); // Android,アプリ起動時に権限をリクエスト
   }
 
   int _counter = 0;
@@ -104,7 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void requestExactAlarmPermission() async {
+  /*void requestExactAlarmPermission() async {
     //android
     // Exact アラームの権限を要求
     if (await Permission.scheduleExactAlarm.request().isGranted) {
@@ -115,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
       print("Exact alarm permission denied. Redirecting to settings.");
       openAppSettings(); // 設定画面にリダイレクト
     }
-  }
+  }*/
 
   // 認証状態を確認しページに遷移するメソッド
   void _navigateToPageIfAuthenticated(Widget page) {

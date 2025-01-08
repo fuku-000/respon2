@@ -1,13 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'weather.dart'; // 天気データを取得するメソッドをインポート
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'package:respon2/fuku.dart';
-import '';
+import 'main.dart';
 
 class FullPage extends StatefulWidget {
   @override
@@ -263,7 +262,6 @@ class _FullPageState extends State<FullPage> {
               SizedBox(height: 20.0),
 
               // 天気情報の表示部分
-
 isLoading
     ? CircularProgressIndicator()
     : errorMessage != null
@@ -353,11 +351,24 @@ isLoading
                 ),
               )
             : Center(child: Text('天気データがありません')),
-
-            ],
-          ),
+            SizedBox(height: 20.0),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: TextButton(
+                onPressed: () {
+                  // アカウント画面への遷移処理
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyHomePage(title: 'Login')),
+                  );
+                },
+                child: const Text('アカウント'),
+              ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

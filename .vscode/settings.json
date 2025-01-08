@@ -1,8 +1,16 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> 943d3018c074bbee79d99a2dd7890322e73b0c23
 {
+    "java.configuration.updateBuildConfiguration": "interactive"
     "cmake.sourceDirectory": "C:/Users/iniad/respon2/linux"
+<<<<<<< HEAD
 =======
 {
     "java.configuration.updateBuildConfiguration": "interactive"
 >>>>>>> 3f6661568214884654c058fef6853fa97558bb26
+=======
+>>>>>>> 943d3018c074bbee79d99a2dd7890322e73b0c23
 }

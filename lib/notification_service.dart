@@ -20,14 +20,15 @@ Future<void> scheduleDailyNotification() async {
       NotificationDetails(android: androidDetails);
 
   // Pythonサーバから通知する文章を取得
-  //String notificationContent = await makeMessage();
+  tz.TZDateTime next = _nextInstanceOfSpecificTime(9, 0);
+  String notificationContent = await makeMessage(next);
 
   // 毎日特定の時間にスケジュール
   await flutterLocalNotificationsPlugin.zonedSchedule(
       0, // 通知ID
       'お知らせ', // 通知のタイトル
-      '少女思考中...', // 通知の内容
-      _nextInstanceOfSpecificTime(12, 7), // 毎朝9時にスケジュール
+      notificationContent, // 通知の内容
+      next, // 毎朝9時にスケジュール
       notificationDetails,
       androidAllowWhileIdle: true,
       uiLocalNotificationDateInterpretation:
@@ -38,8 +39,16 @@ Future<void> scheduleDailyNotification() async {
       );
 }
 
-Future<void> showScheduledNotification(int hour, int minite) async {
-  String message = await makeMessage();
+/*Future<void> showScheduledNotification(int hour, int minite) async {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final DateTime now = DateTime.now();
+  tz.TZDateTime scheduledDate =
+      tz.TZDateTime(tz.local, now.year, now.month, now.day);
+
+  // DateFormatを使用してyyyy-MM-dd形式に変換
+  String formattedDate = DateFormat('yyyy-MM-dd').format(scheduledDate);
+  String message = await makeMessage(scheduledDate);
 
   const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'daily_channel_id', 'Daily Notifications',
@@ -53,7 +62,7 @@ Future<void> showScheduledNotification(int hour, int minite) async {
   await flutterLocalNotificationsPlugin.show(
       0, 'お知らせ', message, notificationDetails,
       payload: jsonEncode({'content': message}));
-}
+}*/
 
 // 特定の時間を設定するヘルパー関数
 tz.TZDateTime _nextInstanceOfSpecificTime(int hour, int minute) {
@@ -65,7 +74,7 @@ tz.TZDateTime _nextInstanceOfSpecificTime(int hour, int minute) {
   }
   // スケジュールされている時間にメッセージを取得するためのコールバック
   Future.delayed(scheduledDate.difference(now), () async {
-    await showScheduledNotification(hour, minute);
+    //await showScheduledNotification(hour, minute);
   });
   print("settime--------------");
   print(scheduledDate); //デバック用
@@ -76,7 +85,7 @@ tz.TZDateTime _nextInstanceOfSpecificTime(int hour, int minute) {
   return scheduledDate;
 }
 
-Future<String> makeMessage() async {
+Future<String> makeMessage(tz.TZDateTime next) async {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final DateTime now = DateTime.now();
@@ -84,7 +93,7 @@ Future<String> makeMessage() async {
       tz.TZDateTime(tz.local, now.year, now.month, now.day);
 
   // DateFormatを使用してyyyy-MM-dd形式に変換
-  String formattedDate = DateFormat('yyyy-MM-dd').format(scheduledDate);
+  String formattedDate = DateFormat('yyyy-MM-dd').format(next);
   User? user = _auth.currentUser;
 
   print('Current user: ${user?.uid}'); // デバッグ用
@@ -119,7 +128,7 @@ Future<String> makeMessage() async {
   try {
     //Pythonサーバにアクセス
     final response = await http.post(
-      Uri.parse('https://back-respon2.onrender.com//message'),
+      Uri.parse('https://back-respon2.onrender.com/message'),
       headers: {'content-type': 'application/json'},
       body: json.encode({'content': textb}),
     );
