@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -8,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'package:respon2/fuku.dart';
 import '';
+import 'main.dart';
 
 class FullPage extends StatefulWidget {
   @override
@@ -16,7 +18,10 @@ class FullPage extends StatefulWidget {
 
 class _FullPageState extends State<FullPage> {
   DateTime selectedDate = DateTime.now();
+  String get selectedNote =>
+      DateFormat('yyyy-MM-dd').format(selectedDate); // selectedNoteを追加
   Map<DateTime, String> notes = {}; // 日付ごとのメモを保持するマップ
+  Map<String, String> note = {};
   TextEditingController noteController = TextEditingController();
   bool isLoading = false; // 天気データのロード中かどうか
   String? errorMessage; // エラーメッセージ用
@@ -46,28 +51,41 @@ class _FullPageState extends State<FullPage> {
     }
   }
 
-  // メモのロード
+//メモの読み込み
   Future<void> loadNotes() async {
     User? user = _auth.currentUser;
+    print('Current user: ${user?.uid}'); // デバッグ用
     if (user != null) {
-      QuerySnapshot snapshot = await _firestore
-          .collection('Users')
-          .doc(user.uid)
-          .collection('Notes')
-          .get();
-      setState(() {
-        notes = {}; // 既存のメモをクリア
-        for (var doc in snapshot.docs) {
-          DateTime date = DateFormat('yyyy-MM-dd').parse(doc.id);
-          notes[date] = doc['content'];
-        }
-      });
+      try {
+        QuerySnapshot snapshot = await _firestore
+            .collection('Users')
+            .doc(user.uid)
+            .collection('Notes')
+            .get();
+
+        setState(() {
+          note = {}; // 既存のメモをクリア
+          for (var doc in snapshot.docs) {
+            DateTime date = DateFormat('yyyy-MM-dd').parse(doc.id);
+            DateTime formatdate = DateTime(date.year, date.month, date.day);
+            String docIdFormatted = DateFormat('yyyy-MM-dd').format(formatdate);
+            note[docIdFormatted] = doc['content'];
+            print(docIdFormatted);
+          }
+        });
+        print('Notes loaded: $note'); // デバッグ用
+      } catch (e) {
+        print('Error loading notes: $e'); // エラー情報を表示
+      }
+    } else {
+      print('No user is currently logged in.'); // ユーザーがログインしていない場合
     }
   }
 
   // メモを入力するためのダイアログを表示
   void showNoteDialog() {
-    noteController.text = notes[selectedDate] ?? '';
+    noteController.text =
+        note[DateFormat('yyyy-MM-dd').format(selectedDate)] ?? '';
     showDialog(
       context: context,
       builder: (context) {
@@ -138,8 +156,8 @@ class _FullPageState extends State<FullPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0), // 余白を追加
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start, // 左揃えに調整
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center, // 中央揃えに調整
             children: <Widget>[
               // カレンダー部分
               TableCalendar(
@@ -152,6 +170,7 @@ class _FullPageState extends State<FullPage> {
                 onDaySelected: (selectedDay, focusedDay) {
                   setState(() {
                     selectedDate = selectedDay;
+                    //selectedNote = selectedDay;
                   });
                 },
                 calendarStyle: CalendarStyle(
@@ -240,51 +259,121 @@ class _FullPageState extends State<FullPage> {
 
               // 選択された日付のメモの表示
               Text(
-                notes[selectedDate] ?? 'メモがありません',
+                note[selectedNote] ?? 'メモがありません',
                 style: TextStyle(fontSize: 18),
               ),
               SizedBox(height: 20.0),
 
               // 天気情報の表示部分
-              isLoading
-                  ? CircularProgressIndicator()
-                  : errorMessage != null
-                      ? Text(errorMessage!)
-                      : weatherData != null
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '都市: ${weatherData['city']['name']}',
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  '気温: ${weatherData['list'][0]['main']['temp']} °C',
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  '天気: ${weatherData['list'][0]['weather'][0]['description']}',
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  '風速: ${weatherData['list'][0]['wind']['speed']} m/s',
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  '湿度: ${weatherData['list'][0]['main']['humidity']}%',
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                              ],
-                            )
-                          : Text('天気データがありません'),
+      Align(
+            alignment: Alignment.bottomRight,
+            child: TextButton(
+              onPressed: () {
+                // アカウント画面への遷移処理
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MyHomePage(title: 'Login')),
+                );
+              },
+              child: const Text('アカウント'),
+            ),
+          ),
+
+isLoading
+    ? CircularProgressIndicator()
+    : errorMessage != null
+        ? Center(child: Text(errorMessage!))
+        : weatherData != null
+            ? Center(  // Wrap the Column with Center
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min, // Adjust size to wrap content
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.location_city, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text(
+                          '都市: ${weatherData['city']['name']}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.thermostat, color: Colors.orange),
+                        SizedBox(width: 8),
+                        Text(
+                          '気温: ${weatherData['list'][0]['main']['temp']} °C',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.wb_sunny, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text(
+                          '天気: ${weatherData['list'][0]['weather'][0]['description']}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.air, color: Colors.purple),
+                        SizedBox(width: 8),
+                        Text(
+                          '風速: ${weatherData['list'][0]['wind']['speed']} m/s',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.water_drop, color: Colors.brown),
+                        SizedBox(width: 8),
+                        Text(
+                          '湿度: ${weatherData['list'][0]['main']['humidity']}%',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              )
+            : Center(child: Text('天気データがありません')),
+
             ],
           ),
         ),
       ),
+      
     );
   }
 }

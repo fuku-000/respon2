@@ -1,7 +1,21 @@
+// 既存の build.gradle の内容
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0'
+    }
+}
+
 allprojects {
     repositories {
         google()
         mavenCentral()
+        // [required] background_fetch
+        maven { url "${project(':background_fetch').projectDir}/libs" }
     }
 }
 

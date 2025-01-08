@@ -8,14 +8,95 @@ import 'weather.dart';
 import 'yuki.dart';
 import 'ayataka.dart';
 import 'login_function.dart';
+import 'notification_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_local_notifications/src/platform_specifics/android/initialization_settings.dart';
+import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel.dart';
+import 'package:flutter_local_notifications/src/platform_specifics/android/notification_details.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'notification_service.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:intl/intl.dart';
+import 'dart:io' show Platform;
+import 'package:background_fetch/background_fetch.dart';
+
+// ローカル通知用のインスタンスを作成
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+// バックグラウンド処理用のハンドラ
+void backgroundFetchHeadlessTask(HeadlessTask task) async {
+  var taskId = task.taskId;
+  var timeout = task.timeout;
+
+  if (timeout) {
+    print('[BackgroundFetch] Headless task timed-out: $taskId');
+    BackgroundFetch.finish(taskId);
+    return;
+  }
+
+  print('[BackgroundFetch] Headless event received: $taskId');
+
+  // Firebase初期化（バックグラウンドで必要な場合）
+  await Firebase.initializeApp();
+
+  try {
+    // makeMessageを呼び出して新しい文章を生成
+    //String newContent = await makeMessage();
+
+    // 通知を表示
+  } catch (e) {
+    print('Error in background task: $e');
+    // エラー時のフォールバック通知
+  }
+
+  // タスク完了を通知
+  BackgroundFetch.finish(taskId);
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // タイムゾーンの初期化
+  tz.initializeTimeZones();
+  tz.setLocalLocation(tz.getLocation("Asia/Tokyo")); //日本標準時
 
   // Firebase初期化
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'daily_channel_id',
+    'Daily Notifications',
+    description: '毎日特定の時間に通知を送るためのチャンネル',
+    importance: Importance.high,
+  );
+
+  // 通知の初期化
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const DarwinInitializationSettings initializationSettingsIOS =
+      DarwinInitializationSettings(); // iOS用設定を追加
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS, // iOS用設定を統合
+  );
+  //通知チャンネル設定
+  const AndroidNotificationChannel setChannel = AndroidNotificationChannel(
+    'daily_channel_id',
+    'Daily Notifications',
+    description: '毎日特定の時間に通知を送るためのチャンネル',
+    importance: Importance.high,
+  );
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (details) async {
+      // 通知タップ時の処理
+      print('Notification tapped: ${details.payload}');
+    },
+  );
+  BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
 
   runApp(const MyApp());
 }
@@ -31,7 +112,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFFAFE3B7)),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Stamp Card'),
+      home: FullPage(),
     );
   }
 }
@@ -49,6 +130,12 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    //requestExactAlarmPermission(); // Android,アプリ起動時に権限をリクエスト
+  }
+
   int _counter = 0;
 
   void _incrementCounter() {
@@ -56,6 +143,19 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
   }
+
+  /*void requestExactAlarmPermission() async {
+    //android
+    // Exact アラームの権限を要求
+    if (await Permission.scheduleExactAlarm.request().isGranted) {
+      // 権限が付与された場合の処理
+      print("Exact alarm permission granted.");
+    } else {
+      // 権限が付与されていない場合の処理
+      print("Exact alarm permission denied. Redirecting to settings.");
+      openAppSettings(); // 設定画面にリダイレクト
+    }
+  }*/
 
   // 認証状態を確認しページに遷移するメソッド
   void _navigateToPageIfAuthenticated(Widget page) {
@@ -138,6 +238,17 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _loginUser,
               child: const Text('ログイン'),
             ),
+            const SizedBox(height: 20),
+            // プッシュ通知をスケジュールするボタン
+            ElevatedButton(
+              onPressed: () async {
+                await scheduleDailyNotification();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('通知をスケジュールしました！')),
+                );
+              },
+              child: const Text('通知をスケジュール'),
+            ),
             const Spacer(),
             Align(
               alignment: Alignment.bottomRight,
@@ -148,7 +259,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: const Text('管理者用はこちら →'),
               ),
             ),
-            const SizedBox(height: 20),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => _navigateToPageIfAuthenticated(const FukuPage()),
