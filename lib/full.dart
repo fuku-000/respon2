@@ -16,7 +16,10 @@ class FullPage extends StatefulWidget {
 
 class _FullPageState extends State<FullPage> {
   DateTime selectedDate = DateTime.now();
+  String get selectedNote =>
+      DateFormat('yyyy-MM-dd').format(selectedDate); // selectedNoteを追加
   Map<DateTime, String> notes = {}; // 日付ごとのメモを保持するマップ
+  Map<String, String> note = {};
   TextEditingController noteController = TextEditingController();
   bool isLoading = false; // 天気データのロード中かどうか
   String? errorMessage; // エラーメッセージ用
@@ -46,28 +49,41 @@ class _FullPageState extends State<FullPage> {
     }
   }
 
-  // メモのロード
+//メモの読み込み
   Future<void> loadNotes() async {
     User? user = _auth.currentUser;
+    print('Current user: ${user?.uid}'); // デバッグ用
     if (user != null) {
-      QuerySnapshot snapshot = await _firestore
-          .collection('Users')
-          .doc(user.uid)
-          .collection('Notes')
-          .get();
-      setState(() {
-        notes = {}; // 既存のメモをクリア
-        for (var doc in snapshot.docs) {
-          DateTime date = DateFormat('yyyy-MM-dd').parse(doc.id);
-          notes[date] = doc['content'];
-        }
-      });
+      try {
+        QuerySnapshot snapshot = await _firestore
+            .collection('Users')
+            .doc(user.uid)
+            .collection('Notes')
+            .get();
+
+        setState(() {
+          note = {}; // 既存のメモをクリア
+          for (var doc in snapshot.docs) {
+            DateTime date = DateFormat('yyyy-MM-dd').parse(doc.id);
+            DateTime formatdate = DateTime(date.year, date.month, date.day);
+            String docIdFormatted = DateFormat('yyyy-MM-dd').format(formatdate);
+            note[docIdFormatted] = doc['content'];
+            print(docIdFormatted);
+          }
+        });
+        print('Notes loaded: $note'); // デバッグ用
+      } catch (e) {
+        print('Error loading notes: $e'); // エラー情報を表示
+      }
+    } else {
+      print('No user is currently logged in.'); // ユーザーがログインしていない場合
     }
   }
 
   // メモを入力するためのダイアログを表示
   void showNoteDialog() {
-    noteController.text = notes[selectedDate] ?? '';
+    noteController.text =
+        note[DateFormat('yyyy-MM-dd').format(selectedDate)] ?? '';
     showDialog(
       context: context,
       builder: (context) {
@@ -152,6 +168,7 @@ class _FullPageState extends State<FullPage> {
                 onDaySelected: (selectedDay, focusedDay) {
                   setState(() {
                     selectedDate = selectedDay;
+                    //selectedNote = selectedDay;
                   });
                 },
                 calendarStyle: CalendarStyle(
@@ -240,7 +257,7 @@ class _FullPageState extends State<FullPage> {
 
               // 選択された日付のメモの表示
               Text(
-                notes[selectedDate] ?? 'メモがありません',
+                note[selectedNote] ?? 'メモがありません',
                 style: TextStyle(fontSize: 18),
               ),
               SizedBox(height: 20.0),
