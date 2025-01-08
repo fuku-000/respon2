@@ -265,6 +265,19 @@ class _FullPageState extends State<FullPage> {
               SizedBox(height: 20.0),
 
               // 天気情報の表示部分
+      Align(
+            alignment: Alignment.bottomRight,
+            child: TextButton(
+              onPressed: () {
+                // アカウント画面への遷移処理
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MyHomePage(title: 'Login')),
+                );
+              },
+              child: const Text('アカウント'),
+            ),
+          ),
 
 isLoading
     ? CircularProgressIndicator()
@@ -360,15 +373,7 @@ isLoading
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => MyHomePage(title: 'ログイン画面へ',)),
-          );
-        },
-        child: Icon(Icons.home),
-      ),
+      
     );
   }
 }
