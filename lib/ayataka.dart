@@ -58,7 +58,7 @@ class _LoginPage extends State<AyatakaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF70E173),
+        backgroundColor: const Color(0xFFAFE3B7),
         title: const Text(''),
       ),
       body: Padding(
@@ -71,7 +71,7 @@ class _LoginPage extends State<AyatakaPage> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF70E173),
+                color: Color(0xFFAFE3B7),
               ),
             ),
             const SizedBox(height: 20),
@@ -81,10 +81,10 @@ class _LoginPage extends State<AyatakaPage> {
                 labelText: 'メールアドレス',
                 border: const OutlineInputBorder(),
                 enabledBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF70E173)),
+                  borderSide: BorderSide(color: Color(0xFFAFE3B7)),
                 ),
                 focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF70E173)),
+                  borderSide: BorderSide(color: Color(0xFFAFE3B7)),
                 ),
               ),
             ),
@@ -96,10 +96,10 @@ class _LoginPage extends State<AyatakaPage> {
                 labelText: 'パスワード',
                 border: const OutlineInputBorder(),
                 enabledBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF70E173)),
+                  borderSide: BorderSide(color: Color(0xFFAFE3B7)),
                 ),
                 focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF70E173)),
+                  borderSide: BorderSide(color: Color(0xFFAFE3B7)),
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -112,7 +112,7 @@ class _LoginPage extends State<AyatakaPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF70E173),
+                backgroundColor: const Color(0xFFAFE3B7),
               ),
               onPressed: _loginUser,
               child: const Text(
@@ -134,7 +134,7 @@ class _LoginPage extends State<AyatakaPage> {
                 child: const Text(
                   '管理者はこちらから→',
                   style: TextStyle(
-                    color: Color(0xFF70E173),
+                    color: Color(0xFFAFE3B7),
                   ),
                 ),
               ),
