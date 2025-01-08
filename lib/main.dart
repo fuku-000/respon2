@@ -112,7 +112,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFFAFE3B7)),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Stamp Card'),
+      home: FullPage(),
     );
   }
 }
