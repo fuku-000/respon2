@@ -9,6 +9,7 @@ import 'yuki.dart';
 import 'ayataka.dart';
 import 'login_function.dart';
 import 'notification_service.dart';
+import 'back_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_local_notifications/src/platform_specifics/android/initialization_settings.dart';
 import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel.dart';
@@ -20,6 +21,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import 'dart:io' show Platform;
 import 'package:background_fetch/background_fetch.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 // ローカル通知用のインスタンスを作成
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -62,6 +64,9 @@ void main() async {
   tz.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation("Asia/Tokyo")); //日本標準時
 
+  // バックグラウンドサービスの初期化
+  await initializeBackgroundService();
+
   // Firebase初期化
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -96,6 +101,12 @@ void main() async {
       print('Notification tapped: ${details.payload}');
     },
   );
+  // チャンネルの作成
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
   BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
 
   runApp(const MyApp());
