@@ -247,7 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _loginUser,
-              child: const Text('ログイン'),
+              child: const Text('新規登録'),
             ),
             const SizedBox(height: 20),
             // プッシュ通知をスケジュールするボタン
@@ -271,10 +271,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _navigateToPageIfAuthenticated(const FukuPage()),
-              child: const Text('スタンプカード'),
-            ),
             ElevatedButton(
               onPressed: () => _navigateToPageIfAuthenticated(FullPage()),
               child: const Text('メインページ'),
