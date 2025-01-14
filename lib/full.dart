@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'package:respon2/fuku.dart';
 import 'main.dart';
+import 'notification_service.dart';
 
 class FullPage extends StatefulWidget {
   @override
@@ -101,6 +102,8 @@ class _FullPageState extends State<FullPage> {
                   notes[selectedDate] = noteController.text;
                 });
                 saveNotes(selectedDate, noteController.text); // メモを保存
+                scheduleDailyNotification(); // メモをもとにスケジューリング
+                loadNotes();
                 Navigator.of(context).pop();
               },
               child: Text('保存'),
@@ -262,113 +265,119 @@ class _FullPageState extends State<FullPage> {
               SizedBox(height: 20.0),
 
               // 天気情報の表示部分
-isLoading
-    ? CircularProgressIndicator()
-    : errorMessage != null
-        ? Center(child: Text(errorMessage!))
-        : weatherData != null
-            ? Center(  // Wrap the Column with Center
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min, // Adjust size to wrap content
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.location_city, color: Colors.blue),
-                        SizedBox(width: 8),
-                        Text(
-                          '都市: ${weatherData['city']['name']}',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.thermostat, color: Colors.orange),
-                        SizedBox(width: 8),
-                        Text(
-                          '気温: ${weatherData['list'][0]['main']['temp']} °C',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.wb_sunny, color: Colors.green),
-                        SizedBox(width: 8),
-                        Text(
-                          '天気: ${weatherData['list'][0]['weather'][0]['description']}',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.air, color: Colors.purple),
-                        SizedBox(width: 8),
-                        Text(
-                          '風速: ${weatherData['list'][0]['wind']['speed']} m/s',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.water_drop, color: Colors.brown),
-                        SizedBox(width: 8),
-                        Text(
-                          '湿度: ${weatherData['list'][0]['main']['humidity']}%',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+              isLoading
+                  ? CircularProgressIndicator()
+                  : errorMessage != null
+                      ? Center(child: Text(errorMessage!))
+                      : weatherData != null
+                          ? Center(
+                              // Wrap the Column with Center
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize
+                                    .min, // Adjust size to wrap content
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.location_city,
+                                          color: Colors.blue),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        '都市: ${weatherData['city']['name']}',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.thermostat,
+                                          color: Colors.orange),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        '気温: ${weatherData['list'][0]['main']['temp']} °C',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.wb_sunny, color: Colors.green),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        '天気: ${weatherData['list'][0]['weather'][0]['description']}',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.air, color: Colors.purple),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        '風速: ${weatherData['list'][0]['wind']['speed']} m/s',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.water_drop,
+                                          color: Colors.brown),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        '湿度: ${weatherData['list'][0]['main']['humidity']}%',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Center(child: Text('天気データがありません')),
+              SizedBox(height: 20.0),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: TextButton(
+                  onPressed: () {
+                    // アカウント画面への遷移処理
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => MyHomePage(title: 'Login')),
+                    );
+                  },
+                  child: const Text('アカウント'),
                 ),
-              )
-            : Center(child: Text('天気データがありません')),
-            SizedBox(height: 20.0),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: TextButton(
-                onPressed: () {
-                  // アカウント画面への遷移処理
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyHomePage(title: 'Login')),
-                  );
-                },
-                child: const Text('アカウント'),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
