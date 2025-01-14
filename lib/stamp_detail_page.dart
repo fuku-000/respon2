@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // 日付フォーマット
+import 'package:intl/intl.dart';
 
 class StampDetailPage extends StatelessWidget {
   final DateTime stampDate;
@@ -15,7 +15,16 @@ class StampDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('details'),
+        title: const Text(
+          'スタンプ詳細',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white, // 白い文字色
+          ),
+        ),
+        backgroundColor: const Color(0xFFAFE3B7), // 統一した背景色
+        centerTitle: true,
       ),
       body: Center(
         child: Padding(
@@ -23,21 +32,36 @@ class StampDetailPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.star, color: Colors.pinkAccent, size: 100),
+              Icon(
+                Icons.star,
+                color: Colors.teal.withOpacity(0.8), // 同じ色のアイコン
+                size: 100,
+              ),
               const SizedBox(height: 20),
               Text(
-                'number: $stampIndex',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                '番号: $stampIndex',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal, // 統一感のあるテキスト色
+                ),
               ),
               const SizedBox(height: 10),
-              Text(
+              const Text(
                 '押した日時:',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
               ),
               const SizedBox(height: 5),
               Text(
                 DateFormat('yyyy/MM/dd HH:mm:ss').format(stampDate),
-                style: const TextStyle(fontSize: 18),
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.black54,
+                ),
               ),
               const SizedBox(height: 30),
               ElevatedButton(
@@ -71,9 +95,19 @@ class StampDetailPage extends StatelessWidget {
                     Navigator.of(context).pop(true);
                   }
                 },
-                child: const Text('スタンプを取り消す'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
+                  backgroundColor: const Color(0xFFAFE3B7), // ボタンの背景色
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15), // ボタンの角丸
+                  ),
+                ),
+                child: const Text(
+                  'スタンプを取り消す',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white, // ボタン内の文字色
+                  ),
                 ),
               ),
             ],
