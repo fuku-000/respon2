@@ -216,7 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             const SizedBox(height: 20),
             const Text(
-              'ログイン',
+              '新規作成',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -273,15 +273,15 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => _navigateToPageIfAuthenticated(const FukuPage()),
-              child: const Text('Fukuページに移動'),
+              child: const Text('スタンプカード'),
             ),
             ElevatedButton(
               onPressed: () => _navigateToPageIfAuthenticated(FullPage()),
-              child: const Text('Fullページに移動'),
+              child: const Text('メインページ'),
             ),
             ElevatedButton(
               onPressed: () => _navigateToPageIfAuthenticated(AyatakaPage()),
-              child: const Text('Ayatakaページに移動'),
+              child: const Text('ログイン'),
             ),
           ],
         ),
